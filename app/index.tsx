@@ -117,179 +117,216 @@ function GymCard({
     toggleFav.mutate(gym.id);
   };
 
+  const handleClick = () => {
+    router.push(`/gym/${gym.id}`);
+  };
+
   return (
-    <View
-      style={{
-        backgroundColor: colors.surface,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: colors.border,
-        marginHorizontal: 16,
-        marginBottom: 14,
-        overflow: "hidden",
-        shadowColor: colors.black,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: isDark ? 0.25 : 0.07,
-        shadowRadius: 12,
-        elevation: 4,
-      }}
-    >
-      {/* Card header strip */}
-      <LinearGradient
-        colors={[`${colors.primary}22`, `${colors.primary}06`]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
+    <TouchableOpacity onPress={handleClick} activeOpacity={0.9}>
+      <View
         style={{
-          paddingHorizontal: 16,
-          paddingVertical: 14,
-          flexDirection: "row",
-          alignItems: "flex-start",
+          backgroundColor: colors.surface,
+          borderRadius: 20,
+          borderWidth: 1,
+          borderColor: colors.border,
+          marginHorizontal: 16,
+          marginBottom: 14,
+          overflow: "hidden",
+          shadowColor: colors.black,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: isDark ? 0.25 : 0.07,
+          shadowRadius: 12,
+          elevation: 4,
         }}
       >
-        {/* Gym icon */}
-        <View
+        {/* Card header strip */}
+        <LinearGradient
+          colors={[`${colors.primary}22`, `${colors.primary}06`]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
           style={{
-            width: 48,
-            height: 48,
-            borderRadius: 14,
-            backgroundColor: `${colors.primary}20`,
-            borderWidth: 1.5,
-            borderColor: `${colors.primary}40`,
-            alignItems: "center",
-            justifyContent: "center",
-            marginRight: 12,
+            paddingHorizontal: 16,
+            paddingVertical: 14,
+            flexDirection: "row",
+            alignItems: "flex-start",
           }}
         >
-          <Feather name="zap" size={22} color={colors.primary} />
-        </View>
-
-        {/* Name + location */}
-        <View style={{ flex: 1 }}>
-          <Text
+          {/* Gym icon */}
+          <View
             style={{
-              color: colors.text,
-              fontSize: 16,
-              fontWeight: "700",
-              marginBottom: 3,
+              width: 48,
+              height: 48,
+              borderRadius: 14,
+              backgroundColor: `${colors.primary}20`,
+              borderWidth: 1.5,
+              borderColor: `${colors.primary}40`,
+              alignItems: "center",
+              justifyContent: "center",
+              marginRight: 12,
             }}
-            numberOfLines={1}
           >
-            {gym.name}
-          </Text>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-            <Feather name="map-pin" size={11} color={colors.textMuted} />
+            <Feather name="zap" size={22} color={colors.primary} />
+          </View>
+
+          {/* Name + location */}
+          <View style={{ flex: 1 }}>
             <Text
-              style={{ color: colors.textMuted, fontSize: 12 }}
+              style={{
+                color: colors.text,
+                fontSize: 16,
+                fontWeight: "700",
+                marginBottom: 3,
+              }}
               numberOfLines={1}
             >
-              {gym.location}, {gym.city}
+              {gym.name}
             </Text>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+            >
+              <Feather name="map-pin" size={11} color={colors.textMuted} />
+              <Text
+                style={{ color: colors.textMuted, fontSize: 12 }}
+                numberOfLines={1}
+              >
+                {gym.location}, {gym.city}
+              </Text>
+            </View>
           </View>
-        </View>
 
-        {/* Right: Open badge + Favorite */}
-        <View style={{ alignItems: "flex-end", gap: 6 }}>
+          {/* Right: Open badge + Favorite */}
+          <View style={{ alignItems: "flex-end", gap: 6 }}>
+            <View
+              style={{
+                paddingHorizontal: 8,
+                paddingVertical: 3,
+                borderRadius: 8,
+                backgroundColor: gym.isOpen ? "#22C55E22" : "#EF444422",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 11,
+                  fontWeight: "700",
+                  color: gym.isOpen ? "#22C55E" : "#EF4444",
+                }}
+              >
+                {gym.isOpen ? "OPEN" : "CLOSED"}
+              </Text>
+            </View>
+
+            {isAuthenticated && (
+              <TouchableOpacity
+                onPress={handleFavorite}
+                disabled={toggleFav.isPending}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 15,
+                  backgroundColor: gym.isFavorited ? "#EF444420" : colors.card,
+                  borderWidth: 1,
+                  borderColor: gym.isFavorited ? "#EF4444" : colors.border,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Feather
+                  name="heart"
+                  size={15}
+                  color={gym.isFavorited ? "#EF4444" : colors.textMuted}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        </LinearGradient>
+
+        {/* Card body */}
+        <View style={{ paddingHorizontal: 16, paddingBottom: 14 }}>
+          {/* Rating row */}
           <View
             style={{
-              paddingHorizontal: 8,
-              paddingVertical: 3,
-              borderRadius: 8,
-              backgroundColor: gym.isOpen ? "#22C55E22" : "#EF444422",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 8,
             }}
           >
-            <Text
-              style={{
-                fontSize: 11,
-                fontWeight: "700",
-                color: gym.isOpen ? "#22C55E" : "#EF4444",
-              }}
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
             >
-              {gym.isOpen ? "OPEN" : "CLOSED"}
-            </Text>
+              <StarRating rating={gym.rating} colors={colors} />
+              <Text
+                style={{ color: colors.text, fontSize: 13, fontWeight: "700" }}
+              >
+                {gym.rating.toFixed(1)}
+              </Text>
+              <Text style={{ color: colors.textMuted, fontSize: 12 }}>
+                ({gym.reviewCount} reviews)
+              </Text>
+            </View>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+            >
+              <Feather name="navigation" size={11} color={colors.textMuted} />
+              <Text style={{ color: colors.textMuted, fontSize: 12 }}>
+                {gym.distance}
+              </Text>
+            </View>
           </View>
 
-          {isAuthenticated && (
-            <TouchableOpacity
-              onPress={handleFavorite}
-              disabled={toggleFav.isPending}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 15,
-                backgroundColor: gym.isFavorited ? "#EF444420" : colors.card,
-                borderWidth: 1,
-                borderColor: gym.isFavorited ? "#EF4444" : colors.border,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Feather
-                name="heart"
-                size={15}
-                color={gym.isFavorited ? "#EF4444" : colors.textMuted}
-              />
-            </TouchableOpacity>
-          )}
-        </View>
-      </LinearGradient>
-
-      {/* Card body */}
-      <View style={{ paddingHorizontal: 16, paddingBottom: 14 }}>
-        {/* Rating row */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 8,
-          }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <StarRating rating={gym.rating} colors={colors} />
-            <Text
-              style={{ color: colors.text, fontSize: 13, fontWeight: "700" }}
-            >
-              {gym.rating.toFixed(1)}
-            </Text>
-            <Text style={{ color: colors.textMuted, fontSize: 12 }}>
-              ({gym.reviewCount} reviews)
-            </Text>
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-            <Feather name="navigation" size={11} color={colors.textMuted} />
-            <Text style={{ color: colors.textMuted, fontSize: 12 }}>
-              {gym.distance}
-            </Text>
-          </View>
-        </View>
-
-        {/* Highlight */}
-        <Text
-          style={{
-            color: colors.textSecondary,
-            fontSize: 13,
-            lineHeight: 18,
-            marginBottom: 12,
-          }}
-        >
-          {gym.highlight}
-        </Text>
-
-        {/* Footer: tags + price */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <View
-            style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, flex: 1 }}
+          {/* Highlight */}
+          <Text
+            style={{
+              color: colors.textSecondary,
+              fontSize: 13,
+              lineHeight: 18,
+              marginBottom: 12,
+            }}
           >
-            {gym.tags.slice(0, 2).map((tag) => (
+            {gym.highlight}
+          </Text>
+
+          {/* Footer: tags + price */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                gap: 6,
+                flex: 1,
+              }}
+            >
+              {gym.tags.slice(0, 2).map((tag) => (
+                <View
+                  key={tag}
+                  style={{
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    borderRadius: 6,
+                    backgroundColor: colors.card,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: colors.textMuted,
+                      fontSize: 11,
+                      fontWeight: "500",
+                    }}
+                  >
+                    {tag}
+                  </Text>
+                </View>
+              ))}
               <View
-                key={tag}
                 style={{
                   paddingHorizontal: 8,
                   paddingVertical: 3,
@@ -306,67 +343,47 @@ function GymCard({
                     fontWeight: "500",
                   }}
                 >
-                  {tag}
+                  {gym.yearsActive}yr{gym.yearsActive !== 1 ? "s" : ""}
                 </Text>
               </View>
-            ))}
-            <View
-              style={{
-                paddingHorizontal: 8,
-                paddingVertical: 3,
-                borderRadius: 6,
-                backgroundColor: colors.card,
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}
-            >
-              <Text
-                style={{
-                  color: colors.textMuted,
-                  fontSize: 11,
-                  fontWeight: "500",
-                }}
-              >
-                {gym.yearsActive}yr{gym.yearsActive !== 1 ? "s" : ""}
-              </Text>
             </View>
-          </View>
 
-          <View style={{ alignItems: "flex-end", marginLeft: 8 }}>
-            <View
-              style={{
-                paddingHorizontal: 10,
-                paddingVertical: 4,
-                borderRadius: 8,
-                backgroundColor: `${PRICE_COLORS[gym.priceTier] ?? "#888"}18`,
-                borderWidth: 1,
-                borderColor: `${PRICE_COLORS[gym.priceTier] ?? "#888"}40`,
-              }}
-            >
-              <Text
+            <View style={{ alignItems: "flex-end", marginLeft: 8 }}>
+              <View
                 style={{
-                  color: PRICE_COLORS[gym.priceTier] ?? "#888",
-                  fontSize: 11,
-                  fontWeight: "700",
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 8,
+                  backgroundColor: `${PRICE_COLORS[gym.priceTier] ?? "#888"}18`,
+                  borderWidth: 1,
+                  borderColor: `${PRICE_COLORS[gym.priceTier] ?? "#888"}40`,
                 }}
               >
-                {gym.priceTier}
+                <Text
+                  style={{
+                    color: PRICE_COLORS[gym.priceTier] ?? "#888",
+                    fontSize: 11,
+                    fontWeight: "700",
+                  }}
+                >
+                  {gym.priceTier}
+                </Text>
+              </View>
+              <Text
+                style={{
+                  color: colors.text,
+                  fontSize: 13,
+                  fontWeight: "700",
+                  marginTop: 3,
+                }}
+              >
+                ${gym.pricePerMonth}/mo
               </Text>
             </View>
-            <Text
-              style={{
-                color: colors.text,
-                fontSize: 13,
-                fontWeight: "700",
-                marginTop: 3,
-              }}
-            >
-              ${gym.pricePerMonth}/mo
-            </Text>
           </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -414,6 +431,11 @@ export default function DiscoverScreen() {
     setSearch("");
     Haptics.selectionAsync();
   }
+
+  // Navigate to profile
+  const navigateToProfile = () => {
+    router.push("/(tabs)/profile");
+  };
 
   // ── List header ────────────────────────────────────────
   const ListHeader = (
@@ -470,10 +492,7 @@ export default function DiscoverScreen() {
 
           {!authLoading &&
             (isAuthenticated ? (
-              <TouchableOpacity
-                onPress={() => router.push("/(tabs)")}
-                activeOpacity={0.8}
-              >
+              <TouchableOpacity onPress={navigateToProfile} activeOpacity={0.8}>
                 <LinearGradient
                   colors={[colors.primary, colors.primaryDark]}
                   style={{
