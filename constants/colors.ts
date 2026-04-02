@@ -1,7 +1,7 @@
-const PRIMARY = "#FF6B2B";
-const PRIMARY_DARK = "#E55A1B";
-const SUCCESS = "#22C55E";
-const ERROR = "#EF4444";
+const PRIMARY = "#FF6B2B"; // Main Action Color (Orange)
+const PRIMARY_DARK = "#E55A1B"; // Pressed/Dark State
+const SUCCESS = "#10B981"; // Emerald Green
+const ERROR = "#F43F5E"; // Rose Red
 
 export type ThemeColors = {
   primary: string;
@@ -24,14 +24,14 @@ export type ThemeColors = {
 export const darkTheme: ThemeColors = {
   primary: PRIMARY,
   primaryDark: PRIMARY_DARK,
-  background: "#0D0D0F",
-  backgroundSecondary: "#111118",
-  surface: "#1A1A1E",
-  card: "#242428",
-  border: "#2E2E33",
-  text: "#FFFFFF",
-  textSecondary: "#9B9BA8",
-  textMuted: "#5A5A65",
+  background: "#09090B", // Deep Matte Black
+  backgroundSecondary: "#121217", // Section color
+  surface: "#18181B", // Input/Surface color
+  card: "#27272A", // Workout Card color
+  border: "#3F3F46", // Subtle border
+  text: "#FAFAFA", // Pure White
+  textSecondary: "#A1A1AA", // Gray text
+  textMuted: "#52525B", // Darker gray
   success: SUCCESS,
   error: ERROR,
   white: "#FFFFFF",
@@ -42,14 +42,14 @@ export const darkTheme: ThemeColors = {
 export const lightTheme: ThemeColors = {
   primary: PRIMARY,
   primaryDark: PRIMARY_DARK,
-  background: "#F5F5F7",
-  backgroundSecondary: "#EBEBEF",
-  surface: "#FFFFFF",
-  card: "#F0F0F5",
-  border: "#E0E0E8",
-  text: "#0D0D0F",
-  textSecondary: "#4A4A55",
-  textMuted: "#9A9AA8",
+  background: "#F8FAFC", // Clean Off-white
+  backgroundSecondary: "#F1F5F9", // Grayish background
+  surface: "#FFFFFF", // Pure White surface
+  card: "#FFFFFF", // White Cards
+  border: "#E2E8F0", // Light Border
+  text: "#0F172A", // Dark Navy/Slate Text
+  textSecondary: "#475569", // Medium Slate
+  textMuted: "#94A3B8", // Faded Blue-gray
   success: SUCCESS,
   error: ERROR,
   white: "#FFFFFF",
@@ -57,4 +57,4 @@ export const lightTheme: ThemeColors = {
   isDark: false,
 };
 
-export default darkTheme;
+export default { darkTheme, lightTheme };

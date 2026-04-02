@@ -9,11 +9,22 @@ import { Platform, StyleSheet, View } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 
 function NativeTabLayout() {
+  const { colors } = useTheme();
+
   return (
-    <NativeTabs>
-      <NativeTabs.Trigger name="index">
-        <Icon sf={{ default: "house", selected: "house.fill" }} />
-        <Label>Home</Label>
+    <NativeTabs
+      style={{
+        backgroundColor: colors.background,
+      }}
+    >
+      <NativeTabs.Trigger name="discover">
+        <Icon sf={{ default: "compass", selected: "compass.fill" }} />
+        <Label>Discover</Label>
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="profile">
+        <Icon sf={{ default: "person", selected: "person.fill" }} />
+        <Label>Profile</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -36,7 +47,10 @@ function ClassicTabLayout() {
           borderTopWidth: 1,
           borderTopColor: colors.border,
           elevation: 0,
-          ...(isWeb ? { height: 84 } : {}),
+          height: Platform.OS === "web" ? 70 : 85,
+          paddingBottom: Platform.OS === "ios" ? 20 : 8,
+          paddingTop: 8,
+          ...(isWeb ? { height: 70 } : {}),
         },
         tabBarBackground: () =>
           isIOS ? (
@@ -56,14 +70,27 @@ function ClassicTabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="discover"
         options={{
-          title: "Home",
-          tabBarIcon: ({ color }) =>
+          title: "Discover",
+          tabBarIcon: ({ color, size }) =>
             isIOS ? (
-              <SymbolView name="house" tintColor={color} size={24} />
+              <SymbolView name="compass" tintColor={color} size={24} />
             ) : (
-              <Feather name="home" size={22} color={color} />
+              <Feather name="compass" size={22} color={color} />
+            ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color, size }) =>
+            isIOS ? (
+              <SymbolView name="person" tintColor={color} size={24} />
+            ) : (
+              <Feather name="user" size={22} color={color} />
             ),
         }}
       />
@@ -72,7 +99,8 @@ function ClassicTabLayout() {
 }
 
 export default function TabLayout() {
-  if (isLiquidGlassAvailable()) {
+  // Check if Liquid Glass effect is available (iOS only)
+  if (Platform.OS === "ios" && isLiquidGlassAvailable()) {
     return <NativeTabLayout />;
   }
   return <ClassicTabLayout />;

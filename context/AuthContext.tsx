@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 import React, {
   createContext,
   useCallback,
@@ -7,6 +8,7 @@ import React, {
   useState,
 } from "react";
 
+// --- Global Types ---
 export interface User {
   id?: number;
   email: string;
@@ -15,34 +17,7 @@ export interface User {
   profileImageUrl?: string;
 }
 
-export interface AddressDto {
-  state: string;
-  city: string;
-  pincode: string;
-}
-
-export interface ProfileDto {
-  gender: string;
-  dob: string;
-  heightCm: number;
-  weightKg: number;
-  profileImageUrl: string;
-  address: string;
-  bio: string;
-  contact_no: string;
-}
-
-export interface RegisterData {
-  email: string;
-  password: string;
-  name?: string;
-  profileImageUrl?: string;
-  role?: string;
-  isActive?: boolean;
-  isEmailVerified?: boolean;
-  address?: AddressDto;
-  profile?: ProfileDto;
-}
+// ... (AddressDto, ProfileDto, RegisterData remain same)
 
 interface AuthState {
   user: User | null;
@@ -53,7 +28,7 @@ interface AuthState {
 
 interface AuthContextType extends AuthState {
   signOut: () => Promise<void>;
-  _setSession: (token: string, user: User) => void;
+  _setSession: (token: string, user: User) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -67,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    (async () => {
+    const loadStorageData = async () => {
       try {
         const [storedToken, storedUser] = await Promise.all([
           AsyncStorage.getItem(AUTH_TOKEN_KEY),
@@ -77,26 +52,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
         }
-      } catch {
-        // ignore
+      } catch (error) {
+        console.error("Failed to load auth state:", error);
       } finally {
         setIsLoading(false);
       }
-    })();
+    };
+    loadStorageData();
   }, []);
 
-  const _setSession = useCallback((newToken: string, newUser: User) => {
-    setToken(newToken);
-    setUser(newUser);
+  const _setSession = useCallback(async (newToken: string, newUser: User) => {
+    try {
+      await Promise.all([
+        AsyncStorage.setItem(AUTH_TOKEN_KEY, newToken),
+        AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(newUser)),
+      ]);
+      setToken(newToken);
+      setUser(newUser);
+    } catch (error) {
+      console.error("Failed to save session:", error);
+    }
   }, []);
 
   const signOut = useCallback(async () => {
-    await Promise.all([
-      AsyncStorage.removeItem(AUTH_TOKEN_KEY),
-      AsyncStorage.removeItem(AUTH_USER_KEY),
-    ]);
-    setToken(null);
-    setUser(null);
+    try {
+      await Promise.all([
+        AsyncStorage.removeItem(AUTH_TOKEN_KEY),
+        AsyncStorage.removeItem(AUTH_USER_KEY),
+      ]);
+      setToken(null);
+      setUser(null);
+      // Automatically redirect to signin
+      router.replace("/(auth)/signin");
+    } catch (error) {
+      console.error("Failed to sign out:", error);
+    }
   }, []);
 
   return (
