@@ -22,6 +22,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
+import { FontSizes } from "@/constants/fonts";
 
 // ─── Form Field Component ─────────────────────────────────────────
 function FormField({
@@ -208,7 +209,20 @@ export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-
+  const openDatePicker = () => {
+    if (Platform.OS === "android") {
+      DateTimePickerAndroid.open({
+        value: formData.dob,
+        mode: "date",
+        is24Hour: true,
+        onChange: (event, selectedDate) => {
+          if (selectedDate) {
+            setFormData({ ...formData, dob: selectedDate });
+          }
+        },
+      });
+    }
+  };
   // Form state
   const [formData, setFormData] = useState({
     name: "",
@@ -371,7 +385,11 @@ export default function ProfileScreen() {
               </Text>
             </LinearGradient>
             <Text
-              style={{ color: colors.text, fontSize: 20, fontWeight: "800" }}
+              style={{
+                color: colors.text,
+                fontSize: FontSizes.xxl,
+                fontWeight: "800",
+              }}
             >
               My Profile
             </Text>
@@ -693,19 +711,59 @@ export default function ProfileScreen() {
                 </Text>
               </TouchableOpacity>
 
-              {showDatePicker && (
-                <DateTimePickerAndroid
-                  value={formData.dob}
-                  mode="date"
-                  display={Platform.OS === "ios" ? "spinner" : "default"}
-                  onChange={(event: any, selectedDate: any) => {
-                    setShowDatePicker(false);
-                    if (selectedDate) {
-                      setFormData({ ...formData, dob: selectedDate });
-                    }
+              <View style={{ marginBottom: 18 }}>
+                <Text
+                  style={{
+                    color: colors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: "600",
+                    marginBottom: 6,
+                    textTransform: "uppercase",
                   }}
-                />
-              )}
+                >
+                  Date of Birth
+                </Text>
+
+                {Platform.OS === "web" ? (
+                  // 🌐 WEB VERSION
+                  <input
+                    type="date"
+                    value={formData.dob.toISOString().split("T")[0]}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        dob: new Date(e.target.value),
+                      })
+                    }
+                    style={{
+                      height: 50,
+                      borderRadius: 10,
+                      padding: 10,
+                      border: "1px solid #ccc",
+                      width: "100%",
+                    }}
+                  />
+                ) : (
+                  // 📱 ANDROID VERSION
+                  <TouchableOpacity
+                    onPress={openDatePicker}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: colors.surface,
+                      borderRadius: 12,
+                      borderWidth: 1.5,
+                      borderColor: colors.border,
+                      paddingHorizontal: 14,
+                      height: 50,
+                    }}
+                  >
+                    <Text style={{ flex: 1, color: colors.text, fontSize: 15 }}>
+                      {formData.dob.toLocaleDateString()}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
 
               <View style={{ flexDirection: "row", gap: 12 }}>
                 <View style={{ flex: 1 }}>

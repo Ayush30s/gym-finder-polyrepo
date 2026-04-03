@@ -18,6 +18,9 @@ import { AuthInput } from "@/components/ui/AuthInput";
 import { GradientButton } from "@/components/ui/GradientButton";
 import { useSignIn } from "@/hooks/useSignIn";
 
+// ✅ GLOBAL DESIGN SYSTEM
+import { Fonts, FontSizes, Typography } from "@/constants/fonts";
+
 function validate(email: string, password: string) {
   const errors: { email?: string; password?: string } = {};
   if (!email.trim()) {
@@ -40,7 +43,9 @@ export default function SignInScreen() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {},
+  );
 
   const handleSignIn = async () => {
     const validationErrors = validate(email, password);
@@ -49,33 +54,35 @@ export default function SignInScreen() {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       return;
     }
+
     setErrors({});
 
     signInMutation.mutate(
       { email: email.trim(), password },
       {
         onSuccess: async () => {
-          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          await Haptics.notificationAsync(
+            Haptics.NotificationFeedbackType.Success,
+          );
           router.replace("/(tabs)");
         },
         onError: async (err: any) => {
-          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          await Haptics.notificationAsync(
+            Haptics.NotificationFeedbackType.Error,
+          );
           Alert.alert(
             "Sign In Failed",
-            err instanceof Error ? err.message : "Something went wrong"
+            err instanceof Error ? err.message : "Something went wrong",
           );
         },
-      }
+      },
     );
   };
 
-  const themeIcon = mode === "system" ? "⚙️" : isDark ? "🌙" : "☀️";
+  // const themeIcon = mode === "system" ? "⚙️" : isDark ? "🌙" : "☀️";
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <KeyboardAvoidingView style={{ flex: 1 }}>
       <LinearGradient
         colors={[colors.background, colors.backgroundSecondary]}
         style={{ flex: 1 }}
@@ -87,14 +94,12 @@ export default function SignInScreen() {
             paddingTop: Platform.OS === "web" ? 67 : insets.top + 20,
             paddingBottom: Platform.OS === "web" ? 34 : insets.bottom + 24,
           }}
-          keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Theme toggle */}
-          <TouchableOpacity
+          {/* Theme Toggle */}
+          {/* <TouchableOpacity
             onPress={toggleTheme}
             style={{ alignSelf: "flex-end", marginBottom: 8 }}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <View
               style={{
@@ -106,56 +111,39 @@ export default function SignInScreen() {
                 borderColor: colors.border,
               }}
             >
-              <Text style={{ fontSize: 16 }}>{themeIcon}</Text>
+              <Text style={{ fontSize: FontSizes.md }}>{themeIcon}</Text>
             </View>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* Logo */}
           <View style={{ alignItems: "center", marginBottom: 36 }}>
-            <View
+            <LinearGradient
+              colors={[colors.primary, colors.primaryDark]}
               style={{
+                width: 72,
+                height: 72,
+                borderRadius: 22,
+                alignItems: "center",
+                justifyContent: "center",
                 marginBottom: 14,
-                shadowColor: colors.primary,
-                shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.5,
-                shadowRadius: 16,
-                elevation: 12,
               }}
             >
-              <LinearGradient
-                colors={[colors.primary, colors.primaryDark]}
+              <Text
                 style={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: 22,
-                  alignItems: "center",
-                  justifyContent: "center",
+                  fontFamily: Fonts.bold,
+                  fontSize: 32,
+                  color: colors.white,
                 }}
               >
-                <Text
-                  style={{
-                    color: colors.white,
-                    fontSize: 36,
-                    fontWeight: "800",
-                    letterSpacing: -1,
-                  }}
-                >
-                  G
-                </Text>
-              </LinearGradient>
-            </View>
-            <Text
-              style={{
-                color: colors.text,
-                fontSize: 28,
-                fontWeight: "800",
-                letterSpacing: -0.5,
-                marginBottom: 6,
-              }}
-            >
+                G
+              </Text>
+            </LinearGradient>
+
+            <Text style={[Typography.heading, { color: colors.text }]}>
               GymApp
             </Text>
-            <Text style={{ color: colors.textMuted, fontSize: 14 }}>
+
+            <Text style={[Typography.caption, { color: colors.textMuted }]}>
               Your fitness journey starts here
             </Text>
           </View>
@@ -169,29 +157,17 @@ export default function SignInScreen() {
               borderWidth: 1,
               borderColor: colors.border,
               marginBottom: 24,
-              shadowColor: colors.black,
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: isDark ? 0.3 : 0.08,
-              shadowRadius: 20,
-              elevation: 10,
             }}
           >
-            <Text
-              style={{
-                color: colors.text,
-                fontSize: 22,
-                fontWeight: "700",
-                marginBottom: 4,
-              }}
-            >
+            <Text style={[Typography.subHeading, { color: colors.text }]}>
               Welcome back
             </Text>
+
             <Text
-              style={{
-                color: colors.textMuted,
-                fontSize: 14,
-                marginBottom: 24,
-              }}
+              style={[
+                Typography.caption,
+                { color: colors.textMuted, marginBottom: 24 },
+              ]}
             >
               Sign in to continue
             </Text>
@@ -200,14 +176,8 @@ export default function SignInScreen() {
               label="Email"
               icon="mail"
               placeholder="you@example.com"
-              keyboardType="email-address"
-              textContentType="emailAddress"
-              autoComplete="email"
               value={email}
-              onChangeText={(t) => {
-                setEmail(t);
-                if (errors.email) setErrors((e) => ({ ...e, email: undefined }));
-              }}
+              onChangeText={setEmail}
               error={errors.email}
             />
 
@@ -215,26 +185,20 @@ export default function SignInScreen() {
               label="Password"
               icon="lock"
               placeholder="Min. 6 characters"
-              textContentType="password"
-              autoComplete="current-password"
               isPassword
               value={password}
-              onChangeText={(t) => {
-                setPassword(t);
-                if (errors.password)
-                  setErrors((e) => ({ ...e, password: undefined }));
-              }}
+              onChangeText={setPassword}
               error={errors.password}
             />
 
             <TouchableOpacity
-              style={{ alignItems: "flex-end", marginBottom: 20, marginTop: -4 }}
+              style={{ alignItems: "flex-end", marginBottom: 20 }}
             >
               <Text
                 style={{
+                  fontFamily: Fonts.medium,
+                  fontSize: FontSizes.sm,
                   color: colors.primary,
-                  fontSize: 13,
-                  fontWeight: "600",
                 }}
               >
                 Forgot password?
@@ -245,28 +209,22 @@ export default function SignInScreen() {
               title="Sign In"
               onPress={handleSignIn}
               isLoading={signInMutation.isPending}
-              style={{ marginTop: 4 }}
             />
           </View>
 
           {/* Footer */}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ color: colors.textMuted, fontSize: 14 }}>
+          <View style={{ flexDirection: "row", justifyContent: "center" }}>
+            <Text style={[Typography.body, { color: colors.textMuted }]}>
               Don't have an account?{" "}
             </Text>
+
             <Link href="/(auth)/register" asChild>
               <TouchableOpacity>
                 <Text
                   style={{
+                    fontFamily: Fonts.bold,
+                    fontSize: FontSizes.md,
                     color: colors.primary,
-                    fontSize: 14,
-                    fontWeight: "700",
                   }}
                 >
                   Create account

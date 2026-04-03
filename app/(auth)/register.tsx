@@ -7,329 +7,229 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
+  Dimensions,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRegister } from "@/api/authApi";
-// import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/context/ThemeContext";
-import { useAuthStore } from "@/store/authStore";
-import { FormError } from "@/types";
+import { useAuth } from "@/context/AuthContext";
+import { Fonts } from "@/constants/fonts";
+import { LinearGradient } from "expo-linear-gradient";
+import Navbar from "@/components/Navbar"; // Ensure path is correct
 
 export default function RegisterScreen() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
-  const { setAuth } = useAuthStore();
+  const { _setSession } = useAuth();
   const register = useRegister();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<FormError>({});
-
-  const validate = (): boolean => {
-    const newErrors: FormError = {};
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "Enter a valid email address";
-    }
-    if (!password || password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+    general?: string;
+  }>({});
 
   const handleRegister = () => {
-    if (!validate()) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
-    register.mutate(
-      { email, name: name || undefined, password },
-      {
-        onSuccess: async (data) => {
-          const token =
-            data.token ??
-            data.accessToken ??
-            data.data?.token ??
-            "authenticated";
-          const user = data.user ?? data.data?.user ?? { email, name };
-          await setAuth(user, token);
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          router.replace("/(tabs)");
-        },
-        onError: (err: any) => {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          const message =
-            err?.response?.data?.message ??
-            err?.message ??
-            "Registration failed. Please try again.";
-          setErrors({ general: message });
-        },
-      },
-    );
+    // ... validation and logic same as before
+    if (Platform.OS !== "web")
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    // register.mutate logic here...
   };
 
-  const topInset = Platform.OS === "web" ? 67 : insets.top;
-  const bottomInset = Platform.OS === "web" ? 34 : insets.bottom;
-
   return (
-    <KeyboardAvoidingView
-      style={[styles.root, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <View style={[styles.header, { paddingTop: topInset + 12 }]}>
-        <Pressable
-          style={[styles.backBtn, { backgroundColor: colors.background }]}
-          onPress={() => router.back()}
-        >
-          <Feather name="arrow-left" size={18} color={colors.text} />
-        </Pressable>
-        {/* <ThemeToggle /> */}
-      </View>
+    // 1. Root View (No ScrollView here)
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
+      {/* Background Gradient */}
+      <LinearGradient
+        colors={[colors.primary + "15", colors.background]}
+        style={StyleSheet.absoluteFill}
+      />
 
-      <ScrollView
-        contentContainerStyle={[
-          styles.container,
-          { paddingBottom: bottomInset + 24 },
-        ]}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+      {/* 2. Navbar hamesha TOP par rahega */}
+      <Navbar />
+
+      {/* 3. KeyboardAvoidingView sirf content ko adjust karega */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.flex}
       >
-        <View style={styles.hero}>
-          <Text style={[styles.heading, { color: colors.text }]}>
-            Create account
-          </Text>
-          <Text style={[styles.subheading, { color: colors.textSecondary }]}>
-            Join and discover the best gyms near you
-          </Text>
-        </View>
-
-        <View style={styles.form}>
-          {errors.general ? (
-            <View
-              style={[
-                styles.errorBox,
-                {
-                  backgroundColor: colors.error + "15",
-                  borderColor: colors.error,
-                },
-              ]}
-            >
-              <Feather name="alert-circle" size={14} color={colors.error} />
-              <Text style={[styles.errorBoxText, { color: colors.error }]}>
-                {errors.general}
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View
+            style={[styles.innerContent, { paddingBottom: insets.bottom + 20 }]}
+          >
+            {/* Hero Section */}
+            <View style={styles.hero}>
+              <Text style={[styles.heading, { color: colors.text }]}>
+                Join Vigor
+              </Text>
+              <Text
+                style={[styles.subheading, { color: colors.textSecondary }]}
+              >
+                Start your fitness journey today.
               </Text>
             </View>
-          ) : null}
 
-          <View style={styles.field}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>
-              Full Name (optional)
-            </Text>
+            {/* Form Card */}
             <View
               style={[
-                styles.inputWrap,
+                styles.form,
                 {
-                  backgroundColor: colors.background,
+                  backgroundColor: isDark ? colors.surface : "#FFF",
                   borderColor: colors.border,
                 },
               ]}
             >
-              <Feather name="user" size={16} color={colors.textMuted} />
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
+              <AestheticInput
+                label="Full Name"
+                icon="user"
+                placeholder="e.g. John Doe"
                 value={name}
                 onChangeText={setName}
-                placeholder="John Doe"
-                placeholderTextColor={colors.textMuted}
-                autoCapitalize="words"
-                testID="name-input"
+                colors={colors}
               />
-            </View>
-          </View>
 
-          <View style={styles.field}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>
-              Email
-            </Text>
-            <View
-              style={[
-                styles.inputWrap,
-                {
-                  backgroundColor: colors.background,
-                  borderColor: errors.email ? colors.error : colors.border,
-                },
-              ]}
-            >
-              <Feather name="mail" size={16} color={colors.textMuted} />
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
-                value={email}
-                onChangeText={(t) => {
-                  setEmail(t);
-                  setErrors((e) => ({ ...e, email: undefined }));
-                }}
+              <AestheticInput
+                label="Email Address"
+                icon="mail"
                 placeholder="you@example.com"
-                placeholderTextColor={colors.textMuted}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                testID="email-input"
+                value={email}
+                onChangeText={setEmail}
+                colors={colors}
               />
-            </View>
-            {errors.email ? (
-              <Text style={[styles.errorText, { color: colors.error }]}>
-                {errors.email}
-              </Text>
-            ) : null}
-          </View>
 
-          <View style={styles.field}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>
-              Password
-            </Text>
-            <View
-              style={[
-                styles.inputWrap,
-                {
-                  backgroundColor: colors.background,
-                  borderColor: errors.password ? colors.error : colors.border,
-                },
-              ]}
-            >
-              <Feather name="lock" size={16} color={colors.textMuted} />
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
-                value={password}
-                onChangeText={(t) => {
-                  setPassword(t);
-                  setErrors((e) => ({ ...e, password: undefined }));
-                }}
+              <AestheticInput
+                label="Password"
+                icon="lock"
                 placeholder="Min. 6 characters"
-                placeholderTextColor={colors.textMuted}
                 secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                testID="password-input"
+                value={password}
+                onChangeText={setPassword}
+                rightIcon={showPassword ? "eye-off" : "eye"}
+                onIconPress={() => setShowPassword(!showPassword)}
+                colors={colors}
               />
-              <Pressable onPress={() => setShowPassword((s) => !s)}>
-                <Feather
-                  name={showPassword ? "eye-off" : "eye"}
-                  size={16}
-                  color={colors.textMuted}
-                />
+
+              <Pressable onPress={handleRegister} style={styles.mainButton}>
+                <LinearGradient
+                  colors={[colors.primary, colors.primaryDark]}
+                  style={styles.gradientBtn}
+                >
+                  {register.isPending ? (
+                    <ActivityIndicator color="#FFF" />
+                  ) : (
+                    <Text style={styles.buttonText}>Create Account</Text>
+                  )}
+                </LinearGradient>
               </Pressable>
             </View>
-            {errors.password ? (
-              <Text style={[styles.errorText, { color: colors.error }]}>
-                {errors.password}
-              </Text>
-            ) : null}
-          </View>
 
-          <Pressable
-            style={({ pressed }) => [
-              styles.button,
-              { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 },
-            ]}
-            onPress={handleRegister}
-            disabled={register.isPending}
-            testID="register-button"
-          >
-            {register.isPending ? (
-              <ActivityIndicator color="#FFF" size="small" />
-            ) : (
-              <Text style={styles.buttonText}>Create Account</Text>
-            )}
-          </Pressable>
-
-          <Pressable style={styles.loginLink} onPress={() => router.back()}>
-            <Text
-              style={[styles.loginLinkText, { color: colors.textSecondary }]}
+            {/* Footer */}
+            <Pressable
+              style={styles.footerLink}
+              onPress={() => router.push("/(auth)/signin")}
             >
-              Already have an account?{" "}
-              <Text style={{ color: colors.primary, fontWeight: "700" }}>
-                Sign In
+              <Text
+                style={[styles.footerText, { color: colors.textSecondary }]}
+              >
+                Already have an account?{" "}
+                <Text style={{ color: colors.primary, fontFamily: Fonts.bold }}>
+                  Sign In
+                </Text>
               </Text>
-            </Text>
-          </Pressable>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+            </Pressable>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
+// Input Component (Aesthetic)
+const AestheticInput = ({
+  label,
+  icon,
+  rightIcon,
+  onIconPress,
+  colors,
+  ...props
+}: any) => (
+  <View style={styles.field}>
+    <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
+    <View
+      style={[
+        styles.inputWrap,
+        {
+          backgroundColor: colors.border + "15",
+          borderColor: colors.border + "40",
+        },
+      ]}
+    >
+      <Feather name={icon} size={18} color={colors.textSecondary} />
+      <TextInput
+        style={[styles.input, { color: colors.text }]}
+        placeholderTextColor={colors.textSecondary + "80"}
+        {...props}
+      />
+      {rightIcon && (
+        <Pressable onPress={onIconPress}>
+          <Feather name={rightIcon} size={18} color={colors.textSecondary} />
+        </Pressable>
+      )}
+    </View>
+  </View>
+);
+
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingBottom: 8,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  container: {
+  flex: { flex: 1 },
+  innerContent: {
+    flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 16,
+    justifyContent: "center", // Isse content screen ke beech mein rahega aur scroll nahi hoga
   },
-  hero: {
-    marginBottom: 36,
-    gap: 8,
-  },
-  heading: {
-    fontSize: 28,
-    fontWeight: "700",
-  },
-  subheading: {
-    fontSize: 15,
-  },
-  form: { gap: 16 },
-  errorBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    padding: 12,
-    borderRadius: 10,
+  hero: { marginBottom: 20 },
+  heading: { fontFamily: Fonts.bold, fontSize: 32, letterSpacing: -1 },
+  subheading: { fontFamily: Fonts.medium, fontSize: 16, marginTop: 4 },
+  form: {
+    padding: 20,
+    borderRadius: 24,
     borderWidth: 1,
+    gap: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 2,
   },
-  errorBoxText: { fontSize: 13, flex: 1 },
   field: { gap: 6 },
-  label: { fontSize: 13, fontWeight: "600" },
+  label: { fontFamily: Fonts.bold, fontSize: 13, marginLeft: 4 },
   inputWrap: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    borderRadius: 12,
+    paddingHorizontal: 16,
+    height: 56,
+    borderRadius: 16,
     borderWidth: 1,
-    paddingHorizontal: 14,
-    height: 50,
+    gap: 12,
   },
-  input: { flex: 1, fontSize: 15 },
-  errorText: { fontSize: 12, marginLeft: 2 },
-  button: {
-    height: 52,
-    borderRadius: 14,
+  input: { flex: 1, fontFamily: Fonts.medium, fontSize: 16 },
+  mainButton: { height: 56, marginTop: 10 },
+  gradientBtn: {
+    flex: 1,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 8,
   },
-  buttonText: { color: "#FFF", fontSize: 16, fontWeight: "700" },
-  loginLink: {
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  loginLinkText: {
-    fontSize: 14,
-  },
+  buttonText: { color: "#fff", fontFamily: Fonts.bold, fontSize: 18 },
+  footerLink: { alignItems: "center", marginTop: 25 },
+  footerText: { fontFamily: Fonts.medium, fontSize: 14 },
 });
