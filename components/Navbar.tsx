@@ -144,7 +144,7 @@ export default function Navbar() {
       <BlurView
         intensity={Platform.OS === "ios" ? 40 : 100}
         tint={isDark ? "dark" : "light"}
-        style={[styles.header, { paddingTop: insets.top + 10 }]}
+        style={[styles.header, { paddingTop: insets.bottom + 10 }]}
       >
         <View
           style={[
@@ -207,15 +207,21 @@ export default function Navbar() {
             {/* 🔼 TOP CONTENT */}
             <View style={{ flex: 1 }}>
               <View style={styles.menuHeader}>
-                <Text style={[styles.menuTitle, { color: colors.text }]}>
-                  Menu
-                </Text>
                 <TouchableOpacity
                   onPress={() => toggleMenu(false)}
                   style={[styles.closeBtn, { backgroundColor: colors.surface }]}
                 >
-                  <Feather name="x" size={24} color={colors.text} />
+                  <Feather name="arrow-left" size={22} color={colors.text} />
                 </TouchableOpacity>
+
+                <Text
+                  style={[
+                    styles.menuTitle,
+                    { color: colors.text, marginLeft: 10 },
+                  ]}
+                >
+                  Menu
+                </Text>
               </View>
 
               {/* ACCOUNT */}
@@ -318,14 +324,24 @@ export default function Navbar() {
 
 const styles = StyleSheet.create({
   header: {
+    position: "absolute",
+    bottom: 0, // 🔥 change from top → bottom
+    left: 0,
+    right: 0,
+
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+
     paddingHorizontal: 20,
-    paddingBottom: 15,
-    borderBottomWidth: 0.5,
-    zIndex: 10,
-    overflow: "hidden",
+    paddingTop: 10,
+    paddingBottom: 20, // 👈 safe area feel
+
+    borderTopWidth: 1,
+    borderColor: "#333",
+
+    zIndex: 999,
+    elevation: 20,
   },
   row: { flexDirection: "row", alignItems: "center", gap: 12 },
   logoBadge: {
