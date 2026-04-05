@@ -405,7 +405,10 @@ export default function DiscoverScreen() {
         data={gyms}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={ListHeader}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+        contentContainerStyle={{
+          paddingTop: 40,
+          paddingBottom: 100,
+        }}
         renderItem={({ item }) => (
           <GymCard
             gym={item}

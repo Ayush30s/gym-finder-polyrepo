@@ -20,6 +20,7 @@ import { useSignIn } from "@/hooks/useSignIn";
 
 // ✅ GLOBAL DESIGN SYSTEM
 import { Fonts, FontSizes, Typography } from "@/constants/fonts";
+import { AppLoader } from "@/components/ui/AppLoader";
 
 function validate(email: string, password: string) {
   const errors: { email?: string; password?: string } = {};
@@ -234,6 +235,7 @@ export default function SignInScreen() {
           </View>
         </ScrollView>
       </LinearGradient>
+      {signInMutation.isPending && <AppLoader text="Signing you in..." />}
     </KeyboardAvoidingView>
   );
 }

@@ -13,11 +13,13 @@ import { View } from "react-native"; // Added View
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-
+import { LoaderProvider, useLoader } from "@/context/LoaderContext";
+import { AppLoader } from "@/components/ui/AppLoader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import Navbar from "@/components/Navbar"; // Ensure this path is correct
+import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -56,6 +58,20 @@ function AppEntry() {
   return <RootLayoutNav />;
 }
 
+function GlobalLoader() {
+  const { loading, text } = useLoader();
+
+  const isFetching = useIsFetching();
+  const isMutating = useIsMutating();
+
+  // 🔥 auto loader
+  const autoLoading = isFetching > 0 || isMutating > 0;
+
+  if (!loading && !autoLoading) return null;
+
+  return <AppLoader text={text || "Loading..."} />;
+}
+
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
@@ -65,11 +81,13 @@ export default function RootLayout() {
             <KeyboardProvider>
               <ThemeProvider>
                 <AuthProvider>
-                  {/* The Fix: Wrapping AppEntry and Navbar in a View */}
-                  <View style={{ flex: 1 }}>
-                    <AppEntry />
-                    <Navbar />
-                  </View>
+                  <LoaderProvider>
+                    <View style={{ flex: 1 }}>
+                      <AppEntry />
+                      <Navbar />
+                      <GlobalLoader />
+                    </View>
+                  </LoaderProvider>
                 </AuthProvider>
               </ThemeProvider>
             </KeyboardProvider>
