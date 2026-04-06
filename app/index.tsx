@@ -19,6 +19,8 @@ import { useGyms } from "@/hooks/useGyms";
 import { useToggleFavorite } from "@/hooks/useFavorites";
 import type { GymDto } from "@/services/gymApi";
 import { Fonts, FontSizes, Typography } from "@/constants/fonts";
+import { router } from "expo-router";
+import Navbar from "@/components/Navbar";
 
 // Import the Navbar component
 // import Navbar from "@/components/Navbar";
@@ -70,7 +72,7 @@ function StarRating({ rating, colors }: any) {
           key={i}
           name="star"
           size={11}
-          color={i <= Math.round(rating) ? "#F59E0B" : colors.border}
+          color={i <= Math.round(rating) ? colors.primary : colors.border} // ✅ FIXED
         />
       ))}
     </View>
@@ -93,7 +95,15 @@ function GymCard({ gym, colors, isDark, isAuthenticated }: any) {
   };
 
   return (
-    <TouchableOpacity onPress={() => {}} activeOpacity={0.9}>
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={() =>
+        router.push({
+          pathname: "/gym/[id]",
+          params: { id: String(gym.id) },
+        })
+      }
+    >
       <View
         style={{
           backgroundColor: colors.surface,
@@ -150,7 +160,9 @@ function GymCard({ gym, colors, isDark, isAuthenticated }: any) {
               paddingHorizontal: 8,
               paddingVertical: 3,
               borderRadius: 8,
-              backgroundColor: gym.isOpen ? "#22C55E22" : "#EF444422",
+              backgroundColor: gym.isOpen
+                ? colors.success + "22"
+                : colors.error + "22",
               height: 22,
             }}
           >
@@ -158,7 +170,7 @@ function GymCard({ gym, colors, isDark, isAuthenticated }: any) {
               style={{
                 fontSize: 11,
                 fontFamily: Fonts.bold,
-                color: gym.isOpen ? "#22C55E" : "#EF4444",
+                color: gym.isOpen ? colors.success : colors.error,
               }}
             >
               {gym.isOpen ? "OPEN" : "CLOSED"}
@@ -252,7 +264,7 @@ export default function DiscoverScreen() {
       {/* 2. Hero Section */}
       <LinearGradient
         colors={[`${colors.primary}18`, colors.background]}
-        style={{ paddingHorizontal: 16, paddingTop: 20, paddingBottom: 24 }}
+        style={{ paddingHorizontal: 16, paddingTop: 60, paddingBottom: 24 }}
       >
         <Text
           style={{
@@ -405,10 +417,29 @@ export default function DiscoverScreen() {
         data={gyms}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={ListHeader}
+        // ✅ MAIN FIX
+        style={{ flex: 1 }}
         contentContainerStyle={{
-          paddingTop: 40,
-          paddingBottom: 100,
+          flexGrow: 1, // 🔥 fill full screen
+          paddingBottom: insets.bottom + 20, // 🔥 navbar safe space
         }}
+        // ✅ EMPTY SPACE HANDLE
+        // ListFooterComponent={
+        //   gyms.length < 4 ? (
+        //     <View
+        //       style={{
+        //         flex: 1,
+        //         justifyContent: "center",
+        //         alignItems: "center",
+        //         paddingVertical: 40,
+        //       }}
+        //     >
+        //       <Text style={{ color: colors.textSecondary }}>
+        //         No more gyms 👀
+        //       </Text>
+        //     </View>
+        //   ) : null
+        // }
         renderItem={({ item }) => (
           <GymCard
             gym={item}
@@ -418,6 +449,7 @@ export default function DiscoverScreen() {
           />
         )}
       />
+      <Navbar />
     </View>
   );
 }

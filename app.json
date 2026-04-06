@@ -30,6 +30,9 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "API_BASE_URL": "http://13.233.7.127:3000"
     }
   }
 }
