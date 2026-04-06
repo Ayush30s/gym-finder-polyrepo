@@ -21,7 +21,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import { Fonts } from "@/constants/fonts";
 import { LinearGradient } from "expo-linear-gradient";
-import Navbar from "@/components/Navbar"; // Ensure path is correct
+// import Navbar from "@/components/Navbar"; // Ensure path is correct
 
 export default function RegisterScreen() {
   const { colors, isDark } = useTheme();
@@ -56,7 +56,7 @@ export default function RegisterScreen() {
       />
 
       {/* 2. Navbar hamesha TOP par rahega */}
-      <Navbar />
+      {/* <Navbar /> */}
 
       {/* 3. KeyboardAvoidingView sirf content ko adjust karega */}
       <KeyboardAvoidingView

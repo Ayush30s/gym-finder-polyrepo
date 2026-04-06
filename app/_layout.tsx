@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
-import { View } from "react-native"; // Added View
+import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -17,8 +17,8 @@ import { LoaderProvider, useLoader } from "@/context/LoaderContext";
 import { AppLoader } from "@/components/ui/AppLoader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/context/AuthContext";
-import { ThemeProvider } from "@/context/ThemeContext";
-import Navbar from "@/components/Navbar"; // Ensure this path is correct
+import { ThemeProvider, useTheme } from "@/context/ThemeContext";
+import Navbar from "@/components/Navbar";
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 
 SplashScreen.preventAutoHideAsync();
@@ -27,9 +27,7 @@ const queryClient = new QueryClient();
 
 function RootLayoutNav() {
   return (
-    <Stack
-      screenOptions={{ headerShown: false, animation: "slide_from_right" }}
-    >
+    <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
@@ -60,11 +58,9 @@ function AppEntry() {
 
 function GlobalLoader() {
   const { loading, text } = useLoader();
-
   const isFetching = useIsFetching();
   const isMutating = useIsMutating();
 
-  // 🔥 auto loader
   const autoLoading = isFetching > 0 || isMutating > 0;
 
   if (!loading && !autoLoading) return null;
@@ -72,6 +68,24 @@ function GlobalLoader() {
   return <AppLoader text={text || "Loading..."} />;
 }
 
+//
+// ✅ SAFE COMPONENT (useTheme allowed here)
+//
+function RootContent() {
+  const { colors } = useTheme();
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <AppEntry />
+      {/* <Navbar /> */}
+      <GlobalLoader />
+    </View>
+  );
+}
+
+//
+// ✅ MAIN ROOT
+//
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
@@ -82,11 +96,7 @@ export default function RootLayout() {
               <ThemeProvider>
                 <AuthProvider>
                   <LoaderProvider>
-                    <View style={{ flex: 1 }}>
-                      <AppEntry />
-                      <Navbar />
-                      <GlobalLoader />
-                    </View>
+                    <RootContent /> {/* ✅ ONLY THIS */}
                   </LoaderProvider>
                 </AuthProvider>
               </ThemeProvider>

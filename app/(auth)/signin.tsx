@@ -21,6 +21,7 @@ import { useSignIn } from "@/hooks/useSignIn";
 // ✅ GLOBAL DESIGN SYSTEM
 import { Fonts, FontSizes, Typography } from "@/constants/fonts";
 import { AppLoader } from "@/components/ui/AppLoader";
+import { apiClient } from "@/services/apiClient";
 
 function validate(email: string, password: string) {
   const errors: { email?: string; password?: string } = {};
@@ -38,6 +39,7 @@ function validate(email: string, password: string) {
 }
 
 export default function SignInScreen() {
+  console.log("BASE URL:", apiClient.defaults.baseURL);
   const insets = useSafeAreaInsets();
   const { colors, isDark, toggleTheme, mode } = useTheme();
   const signInMutation = useSignIn();

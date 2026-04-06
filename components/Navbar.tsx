@@ -25,6 +25,7 @@ import * as Haptics from "expo-haptics";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { Fonts, FontSizes } from "@/constants/fonts";
+import colors from "@/constants/colors";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -48,7 +49,7 @@ const ThemeToggle = () => {
     const rotate = interpolate(progress.value, [0, 1], [0, 360]);
     return {
       transform: [{ translateX }, { rotate: `${rotate}deg` }],
-      backgroundColor: isDark ? colors.primary : "#FFFFFF",
+      backgroundColor: isDark ? colors.primary : colors.white,
     };
   });
 
@@ -59,7 +60,7 @@ const ThemeToggle = () => {
           <Ionicons
             name={isDark ? "moon" : "sunny"}
             size={14}
-            color={isDark ? "#FFFFFF" : colors.primary}
+            color={isDark ? colors.white : colors.primary}
           />
         </Animated.View>
       </Animated.View>
@@ -97,9 +98,7 @@ export default function Navbar() {
         style={[
           styles.menuItem,
           {
-            backgroundColor: isDark
-              ? "rgba(255,255,255,0.03)"
-              : "rgba(0,0,0,0.03)",
+            backgroundColor: colors.overlay,
           },
           isActive && {
             backgroundColor: colors.primary + "15",
@@ -142,41 +141,65 @@ export default function Navbar() {
     <>
       {/* 1. Main Header Bar */}
       <BlurView
-        intensity={Platform.OS === "ios" ? 40 : 100}
+        intensity={80}
         tint={isDark ? "dark" : "light"}
-        style={[styles.header, { paddingTop: insets.bottom + 10 }]}
+        style={[styles.header, { paddingVertical: 10 }]}
       >
+        {/* GLASS BACKGROUND */}
         <View
           style={[
             StyleSheet.absoluteFill,
-            { backgroundColor: colors.background, opacity: 0.85 },
+            {
+              backgroundColor: colors.overlay,
+            },
           ]}
         />
 
-        <TouchableOpacity style={styles.row} onPress={() => router.push("/")}>
-          <LinearGradient
-            colors={[colors.primary, colors.primaryDark]}
-            style={styles.logoBadge}
-          >
-            <Text style={styles.logoText}>G</Text>
-          </LinearGradient>
-          <Text style={[styles.brandName, { color: colors.text }]}>GymApp</Text>
-        </TouchableOpacity>
+        {/* LEFT */}
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity style={styles.row} onPress={() => router.push("/")}>
+            <LinearGradient
+              colors={[colors.primary, colors.primaryDark]}
+              style={styles.logoBadge}
+            >
+              <Text style={styles.logoText}>G</Text>
+            </LinearGradient>
 
-        <View style={styles.row}>
+            <Text style={[styles.brandName, { color: colors.text }]}>
+              GymApp
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* CENTER (balance space) */}
+        <View style={{ flex: 1, alignItems: "center" }} />
+
+        {/* RIGHT */}
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
           <ThemeToggle />
+
           <TouchableOpacity
             onPress={() => toggleMenu(true)}
             style={[
               styles.iconButton,
-              { backgroundColor: colors.surface, borderColor: colors.border },
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+              },
             ]}
           >
-            <Feather name="menu" size={22} color={colors.text} />
+            <Feather name="menu" size={20} color={colors.text} />
           </TouchableOpacity>
         </View>
       </BlurView>
-
       {/* 2. Full Screen Menu Overlay */}
       <Animated.View style={[styles.menuWrapper, animatedStyle]}>
         <BlurView
@@ -188,9 +211,7 @@ export default function Navbar() {
             style={[
               StyleSheet.absoluteFill,
               {
-                backgroundColor: isDark
-                  ? "rgba(9,9,11,0.75)"
-                  : "rgba(250,250,251,0.75)",
+                backgroundColor: colors.overlay,
               },
             ]}
           />
@@ -290,9 +311,7 @@ export default function Navbar() {
                 styles.bottomBar,
                 {
                   borderTopColor: colors.border,
-                  backgroundColor: isDark
-                    ? "rgba(255,255,255,0.05)"
-                    : "rgba(0,0,0,0.02)",
+                  backgroundColor: colors.overlay,
                 },
               ]}
             >
@@ -325,23 +344,30 @@ export default function Navbar() {
 const styles = StyleSheet.create({
   header: {
     position: "absolute",
-    bottom: 0, // 🔥 change from top → bottom
-    left: 0,
-    right: 0,
+    bottom: 25,
+    left: 16,
+    right: 16,
+
+    height: 65,
 
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "center",
 
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20, // 👈 safe area feel
+    paddingHorizontal: 18,
 
-    borderTopWidth: 1,
-    borderColor: "#333",
+    borderRadius: 999,
+
+    overflow: "hidden",
+
+    // 🔥 PREMIUM SHADOW
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 12,
 
     zIndex: 999,
-    elevation: 20,
   },
   row: { flexDirection: "row", alignItems: "center", gap: 12 },
   logoBadge: {

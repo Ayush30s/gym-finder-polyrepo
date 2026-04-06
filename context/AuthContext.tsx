@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { signInApi, registerApi } from "@/services/authApi";
 
 // --- Global Types ---
 export interface User {
@@ -29,6 +30,8 @@ interface AuthState {
 interface AuthContextType extends AuthState {
   signOut: () => Promise<void>;
   _setSession: (token: string, user: User) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>; // ✅
+  signUp: (data: any) => Promise<void>; // ✅
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -89,6 +92,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const signIn = useCallback(async (email: string, password: string) => {
+    try {
+      const res = await signInApi(email, password);
+
+      await _setSession(res.accessToken, res.user);
+
+      // ✅ redirect after login
+      router.replace("/(tabs)");
+    } catch (error: any) {
+      console.log("Login Error:", error.message);
+      throw error;
+    }
+  }, []);
+
+  const signUp = useCallback(async (payload: any) => {
+    try {
+      const res = await registerApi(payload);
+
+      await _setSession(res.accessToken, res.user);
+
+      // ✅ redirect after register
+      router.replace("/(tabs)");
+    } catch (error: any) {
+      console.log("Register Error:", error.message);
+      throw error;
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -98,6 +129,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!token && !!user,
         signOut,
         _setSession,
+        signIn, // ✅ ADD
+        signUp, // ✅ ADDF
       }}
     >
       {children}

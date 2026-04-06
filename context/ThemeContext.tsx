@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { useColorScheme } from "react-native";
@@ -15,6 +16,7 @@ interface ThemeContextType {
   colors: ThemeColors;
   mode: ThemeMode;
   isDark: boolean;
+  isSystem: boolean;
   setMode: (mode: ThemeMode) => void;
   toggleTheme: () => void;
 }
@@ -25,43 +27,68 @@ const THEME_KEY = "@gym_app_theme_mode";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemScheme = useColorScheme();
-  const [mode, setModeState] = useState<ThemeMode>("system");
 
+  const [mode, setModeState] = useState<ThemeMode>("system");
+  const [isReady, setIsReady] = useState(false);
+
+  // 🔥 Load saved theme
   useEffect(() => {
-    AsyncStorage.getItem(THEME_KEY).then((stored) => {
-      if (stored === "dark" || stored === "light" || stored === "system") {
-        setModeState(stored);
+    const loadTheme = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(THEME_KEY);
+        if (stored === "dark" || stored === "light" || stored === "system") {
+          setModeState(stored);
+        }
+      } catch (e) {
+        console.log("Theme load error:", e);
+      } finally {
+        setIsReady(true); // 👈 important (no flicker)
       }
-    });
+    };
+
+    loadTheme();
   }, []);
 
+  // 🔥 Set mode manually
   const setMode = useCallback((newMode: ThemeMode) => {
     setModeState(newMode);
     AsyncStorage.setItem(THEME_KEY, newMode);
   }, []);
 
+  // 🔥 Toggle (simple clean UX)
   const toggleTheme = useCallback(() => {
     setModeState((prev) => {
-      const next =
-        prev === "dark"
-          ? "light"
-          : prev === "light"
-          ? "system"
-          : systemScheme === "dark"
-          ? "light"
-          : "dark";
+      const next = prev === "dark" ? "light" : "dark";
       AsyncStorage.setItem(THEME_KEY, next);
       return next;
     });
-  }, [systemScheme]);
+  }, []);
+
+  // 🔥 Derived states
+  const isSystem = mode === "system";
 
   const isDark =
     mode === "dark" || (mode === "system" && systemScheme === "dark");
 
-  const colors = isDark ? darkTheme : lightTheme;
+  // 🔥 Memoized colors (performance)
+  const colors = useMemo(() => {
+    return isDark ? darkTheme : lightTheme;
+  }, [isDark]);
+
+  // ❌ Avoid flicker before loading theme
+  if (!isReady) return null;
 
   return (
-    <ThemeContext.Provider value={{ colors, mode, isDark, setMode, toggleTheme }}>
+    <ThemeContext.Provider
+      value={{
+        colors,
+        mode,
+        isDark,
+        isSystem,
+        setMode,
+        toggleTheme,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
@@ -69,6 +96,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
 export function useTheme(): ThemeContextType {
   const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error("useTheme must be used inside ThemeProvider");
+  if (!ctx) {
+    throw new Error("useTheme must be used inside ThemeProvider");
+  }
   return ctx;
 }
