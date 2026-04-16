@@ -31,7 +31,7 @@ function RootLayoutNav() {
       <Stack.Screen name="index" />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="gym" />
+      <Stack.Screen name="gym/[id]" />
       <Stack.Screen name="+not-found" />
     </Stack>
   );
@@ -83,9 +83,6 @@ function RootContent() {
   );
 }
 
-//
-// ✅ MAIN ROOT
-//
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
@@ -93,13 +90,13 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
-              <ThemeProvider>
-                <AuthProvider>
+              <AuthProvider>
+                <ThemeProvider>
                   <LoaderProvider>
                     <RootContent /> {/* ✅ ONLY THIS */}
                   </LoaderProvider>
-                </AuthProvider>
-              </ThemeProvider>
+                </ThemeProvider>
+              </AuthProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>

@@ -17,17 +17,19 @@ import {
   Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRegister } from "@/api/authApi";
 import { useTheme } from "@/context/ThemeContext";
 import { Fonts } from "@/constants/fonts";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRegister } from "@/hooks/useRegister";
+
+// const register = useRegister();
 
 type Role = "USER" | "TRAINER" | "OWNER";
 
 export default function RegisterScreen() {
+  const register = useRegister();
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
-  const register = useRegister();
 
   // Form State
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
@@ -41,19 +43,12 @@ export default function RegisterScreen() {
     { id: "TRAINER" as Role, label: "Trainer", icon: "arm-flex" },
     { id: "OWNER" as Role, label: "Gym Owner", icon: "storefront" },
   ];
-
   const handleRegister = () => {
-    // 1. Client-side Validation
-    if (!selectedRole || !name || !email || !password) {
-      Alert.alert(
-        "Required Fields",
-        "Please select a role and fill in all details.",
-      );
-      return;
-    }
+    console.log("🟡 BUTTON CLICKED");
 
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (!name || !email || !password) {
+      Alert.alert("Error", "All fields required");
+      return;
     }
 
     register.mutate(
@@ -61,24 +56,21 @@ export default function RegisterScreen() {
         name,
         email,
         password,
-        role: selectedRole,
+        role: "USER", // 🔥 IMPORTANT FIX
       },
       {
-        onSuccess: (data) => {
-          Alert.alert("Success 🎉", "Account created successfully!", [
-            {
-              text: "Sign In Now",
-              onPress: () => router.push("/(auth)/signin"),
-            },
-          ]);
+        onSuccess: () => {
+          console.log("✅ REGISTER DONE");
+          Alert.alert("Success", "Registration successful");
+          router.replace("/(auth)/signin");
         },
         onError: (error: any) => {
-          console.log(error)
-          // Extracts error message from API response (adjust path based on your backend)
-          const errorMsg =
-            error?.response?.data?.message ||
-            "Something went wrong. Please try again.";
-          Alert.alert("Registration Failed", errorMsg);
+          console.log("❌ REGISTER FAILED");
+
+          Alert.alert(
+            "Error",
+            error?.response?.data?.message || "Registration failed",
+          );
         },
       },
     );

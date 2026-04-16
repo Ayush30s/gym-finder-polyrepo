@@ -13,14 +13,16 @@ export const profileApi = {
     return response.data;
   },
 
-  uploadProfileImage: async (imageUri: string): Promise<{ imageUrl: string }> => {
+  uploadProfileImage: async (
+    imageUri: string,
+  ): Promise<{ imageUrl: string }> => {
     const formData = new FormData();
     formData.append("image", {
       uri: imageUri,
       type: "image/jpeg",
       name: "profile.jpg",
     } as any);
-    
+
     const response = await apiClient.post("/profile/upload-image", formData, {
       headers: {
         "Content-Type": "multipart/form-data",

@@ -23,6 +23,20 @@ import { useTheme } from "@/context/ThemeContext";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { FontSizes } from "@/constants/fonts";
+import apiClient, { setApiToken } from "@/api/axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+const AUTH_USER_KEY = "@gym_app_user";
+export const profileApi = {
+  getProfile: async () => {
+    const res = await apiClient.get("/user/profile");
+    return res.data;
+  },
+
+  updateProfile: async (data: any) => {
+    const res = await apiClient.put("/user/profile", data);
+    return res.data;
+  },
+};
 
 // ─── Form Field Component ─────────────────────────────────────────
 function FormField({
@@ -202,27 +216,33 @@ function InfoCard({
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { colors, isDark, toggleTheme, mode } = useTheme();
-  const { user, isAuthenticated, logout } = useAuth();
-  const { data: profileData, isLoading: profileLoading } = useProfile();
+  const { isAuthenticated, logout, token } = useAuth();
+  const {
+    data: profileData,
+    isLoading: profileLoading,
+    refetch,
+  } = useProfile();
   const updateProfile = useUpdateProfile();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const openDatePicker = () => {
-    if (Platform.OS === "android") {
-      DateTimePickerAndroid.open({
-        value: formData.dob,
-        mode: "date",
-        is24Hour: true,
-        onChange: (event, selectedDate) => {
-          if (selectedDate) {
-            setFormData({ ...formData, dob: selectedDate });
-          }
-        },
-      });
+
+  // Set token when component mounts and when token changes
+  useEffect(() => {
+    if (token) {
+      setApiToken(token);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    AsyncStorage.getItem(AUTH_USER_KEY).then((user) => {
+      if (user) {
+        const userData = JSON.parse(user);
+        console.log("User data from AsyncStorage:", userData);
+      }
+    });
+  }, []);
+
   // Form state
   const [formData, setFormData] = useState({
     name: "",
@@ -242,26 +262,48 @@ export default function ProfileScreen() {
     pincode: "",
   });
 
+  // Update form data when profile data is loaded
   useEffect(() => {
-    if (user || profileData) {
+    if (profileData) {
+      console.log("Profile data received:", profileData);
+
       setFormData({
-        name: user?.name || "",
-        email: user?.email || "",
+        name: profileData.user?.name || profileData.name || "",
+        email: profileData.user?.email || profileData.email || "",
         profileImageUrl:
-          user?.profileImageUrl || profileData?.profileImageUrl || "",
-        gender: profileData?.gender || "",
-        dob: profileData?.dob ? new Date(profileData.dob) : new Date(),
-        heightCm: profileData?.heightCm?.toString() || "",
-        weightKg: profileData?.weightKg?.toString() || "",
-        address: profileData?.address || "",
-        bio: profileData?.bio || "",
-        contact_no: profileData?.contact_no || "",
-        state: profileData?.user?.address?.state || "",
-        city: profileData?.user?.address?.city || "",
-        pincode: profileData?.user?.address?.pincode || "",
+          profileData.user?.profileImageUrl ||
+          profileData.profileImageUrl ||
+          "",
+        gender: profileData.gender || "",
+        dob: profileData.dob ? new Date(profileData.dob) : new Date(),
+        heightCm: profileData.heightCm?.toString() || "",
+        weightKg: profileData.weightKg?.toString() || "",
+        address: profileData.address || "",
+        bio: profileData.bio || "",
+        contact_no:
+          profileData.contact_no || profileData.user?.contact_no || "",
+        state: profileData.state || profileData.user?.address?.state || "",
+        city: profileData.city || profileData.user?.address?.city || "",
+        pincode:
+          profileData.pincode || profileData.user?.address?.pincode || "",
       });
     }
-  }, [user, profileData]);
+  }, [profileData]);
+
+  const openDatePicker = () => {
+    if (Platform.OS === "android") {
+      DateTimePickerAndroid.open({
+        value: formData.dob,
+        mode: "date",
+        is24Hour: true,
+        onChange: (event, selectedDate) => {
+          if (selectedDate) {
+            setFormData({ ...formData, dob: selectedDate });
+          }
+        },
+      });
+    }
+  };
 
   const handleUpdate = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -269,28 +311,30 @@ export default function ProfileScreen() {
     const updateData = {
       name: formData.name,
       profileImageUrl: formData.profileImageUrl,
-      profile: {
-        gender: formData.gender,
-        dob: formData.dob,
-        heightCm: parseInt(formData.heightCm) || 0,
-        weightKg: parseInt(formData.weightKg) || 0,
-        address: formData.address,
-        bio: formData.bio,
-        contact_no: formData.contact_no,
-      },
-      address: {
-        state: formData.state,
-        city: formData.city,
-        pincode: formData.pincode,
-      },
+      gender: formData.gender,
+      dob: formData.dob,
+      heightCm: parseInt(formData.heightCm) || 0,
+      weightKg: parseInt(formData.weightKg) || 0,
+      address: formData.address,
+      bio: formData.bio,
+      contact_no: formData.contact_no,
+      state: formData.state,
+      city: formData.city,
+      pincode: formData.pincode,
     };
 
     try {
       await updateProfile.mutateAsync(updateData);
       Alert.alert("Success", "Profile updated successfully!");
       setIsEditing(false);
-    } catch (error) {
-      Alert.alert("Error", "Failed to update profile. Please try again.");
+      refetch(); // Refetch the profile data to ensure UI is updated
+    } catch (error: any) {
+      console.error("Update error:", error);
+      Alert.alert(
+        "Error",
+        error?.response?.data?.message ||
+          "Failed to update profile. Please try again.",
+      );
     }
   };
 
@@ -467,7 +511,11 @@ export default function ProfileScreen() {
                   />
                 ) : (
                   <Text style={{ fontSize: 40, color: colors.primary }}>
-                    {(user?.name?.[0] || user?.email?.[0] || "U").toUpperCase()}
+                    {(
+                      formData.name?.[0] ||
+                      formData.email?.[0] ||
+                      "U"
+                    ).toUpperCase()}
                   </Text>
                 )}
                 {uploadingImage && (
@@ -682,34 +730,9 @@ export default function ProfileScreen() {
                   setFormData({ ...formData, gender: text })
                 }
                 placeholder="Male/Female/Other"
-                icon="users"
+                icon="user"
                 colors={colors}
               />
-
-              <TouchableOpacity
-                onPress={() => setShowDatePicker(true)}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  backgroundColor: colors.surface,
-                  borderRadius: 12,
-                  borderWidth: 1.5,
-                  borderColor: colors.border,
-                  paddingHorizontal: 14,
-                  height: 50,
-                  marginBottom: 18,
-                }}
-              >
-                <Feather
-                  name="calendar"
-                  size={18}
-                  color={colors.textMuted}
-                  style={{ marginRight: 10 }}
-                />
-                <Text style={{ flex: 1, color: colors.text, fontSize: 15 }}>
-                  {formData.dob.toLocaleDateString()}
-                </Text>
-              </TouchableOpacity>
 
               <View style={{ marginBottom: 18 }}>
                 <Text
@@ -797,7 +820,7 @@ export default function ProfileScreen() {
               <InfoCard
                 label="Gender"
                 value={formData.gender || "Not set"}
-                icon="users"
+                icon="user"
                 colors={colors}
               />
               <InfoCard

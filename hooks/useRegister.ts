@@ -1,23 +1,29 @@
+// src/hooks/useRegister.ts
 import { useMutation } from "@tanstack/react-query";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { RegisterData, useAuth } from "@/context/AuthContext";
 import { registerApi } from "@/services/authApi";
+import { useAuth } from "../context/AuthContext";
 
 const AUTH_TOKEN_KEY = "@gym_app_token";
 const AUTH_USER_KEY = "@gym_app_user";
 
 export function useRegister() {
-  const { _setSession } = useAuth();
+  const auth = useAuth(); // ✅ SAFE
 
   return useMutation({
-    mutationFn: (payload: RegisterData) => registerApi(payload),
+    mutationFn: registerApi,
 
     onSuccess: async (data) => {
-      await Promise.all([
-        AsyncStorage.setItem(AUTH_TOKEN_KEY, data.accessToken),
-        AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user)),
-      ]);
-      _setSession(data.accessToken, data.user);
+      console.log("SUCCESS:", data);
+
+      auth._setSession(data.accessToken, data.user);
+    },
+
+    onError: (error: any) => {
+      console.log("❌ REGISTER ERROR:");
+      console.log("Status:", error?.response?.status);
+      console.log("Data:", error?.response?.data);
+      console.log("Message:", error?.message);
     },
   });
 }
