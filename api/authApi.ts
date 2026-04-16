@@ -43,19 +43,39 @@ export interface AuthResponse {
 }
 
 export function useSignIn() {
-  return useMutation({
-    mutationFn: async (payload: SignInPayload): Promise<AuthResponse> => {
-      const { data } = await apiClient.post<AuthResponse>("/auth/signin", payload);
-      return data;
+  return useMutation<AuthResponse, any, SignInPayload>({
+    mutationFn: async (payload: SignInPayload) => {
+      const response = await apiClient.post<AuthResponse>(
+        "/auth/signin",
+        payload,
+      );
+      console.log("signin response:", response.data);
+      return response.data;
+    },
+    onError: (error: any) => {
+      console.log("Sign in failed");
+      console.log("Status:", error?.response?.status);
+      console.log("Data:", error?.response?.data);
+      console.log("Message:", error?.message);
     },
   });
 }
 
 export function useRegister() {
-  return useMutation({
-    mutationFn: async (payload: RegisterPayload): Promise<AuthResponse> => {
-      const { data } = await apiClient.post<AuthResponse>("/auth/register", payload);
-      return data;
+  return useMutation<AuthResponse, any, RegisterPayload>({
+    mutationFn: async (payload: RegisterPayload) => {
+      const response = await apiClient.post<AuthResponse>(
+        "/auth/register",
+        payload,
+      );
+      console.log("register response:", response.data);
+      return response.data;
+    },
+    onError: (error: any) => {
+      console.log("Register failed");
+      console.log("Status:", error?.response?.status);
+      console.log("Data:", error?.response?.data);
+      console.log("Message:", error?.message);
     },
   });
 }

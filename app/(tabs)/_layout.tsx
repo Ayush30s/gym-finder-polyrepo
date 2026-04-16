@@ -12,13 +12,8 @@ function NativeTabLayout() {
   const { colors } = useTheme();
 
   return (
-    <NativeTabs
-      style={{
-        backgroundColor: colors.background,
-      }}
-    >
+    <NativeTabs>
       <NativeTabs.Trigger name="discover">
-        <Icon sf={{ default: "compass", selected: "compass.fill" }} />
         <Label>Discover</Label>
       </NativeTabs.Trigger>
 
@@ -73,12 +68,6 @@ function ClassicTabLayout() {
         name="discover"
         options={{
           title: "Discover",
-          tabBarIcon: ({ color, size }) =>
-            isIOS ? (
-              <SymbolView name="compass" tintColor={color} size={24} />
-            ) : (
-              <Feather name="compass" size={22} color={color} />
-            ),
         }}
       />
 

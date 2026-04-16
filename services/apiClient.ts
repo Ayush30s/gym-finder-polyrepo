@@ -8,7 +8,6 @@ export const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 10000,
 });
 
 // ✅ Request interceptor
@@ -22,11 +21,14 @@ apiClient.interceptors.request.use(async (config) => {
   return config;
 });
 
-// ✅ Response interceptor
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.log("API ERROR:", error?.response?.data);
+    console.log("API ERROR response:", error?.response);
+    console.log("API ERROR data:", error?.response?.data);
+    console.log("API ERROR message:", error?.message);
+    console.log("API ERROR code:", error?.code);
+    console.log("API ERROR request:", error?.request);
 
     const message =
       error?.response?.data?.message ||
